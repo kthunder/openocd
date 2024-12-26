@@ -114,8 +114,20 @@ COMMAND_HANDLER(xxlink_handle_vid_pid_command)
 
     return ERROR_OK;
 }
+COMMAND_HANDLER(xxlink_handle_hello_command)
+{
+    printf("%s\r\n",__func__);
+    return ERROR_OK;
+}
 
 static const struct command_registration xxlink_subcommand_handlers[] = {
+    {
+        .name = "hello",
+        .handler = &xxlink_handle_hello_command,
+        .mode = COMMAND_ANY,
+        .help = "USB VID and PID of the adapter",
+        .usage = "vid pid",
+    },
     {
         .name = "vid_pid",
         .handler = &xxlink_handle_vid_pid_command,
@@ -142,27 +154,31 @@ static void xxlink_execute_command(struct jtag_command *cmd)
     LOG_DEBUG("xxlink_execute_command:jtag interface cmd\r\n");
     switch (cmd->type)
     {
-    case JTAG_SLEEP:
-        LOG_DEBUG("-->JTAG_SLEEP\r\n");
-        // cmsis_dap_flush();
-        // cmsis_dap_execute_sleep(cmd);
+    case JTAG_SCAN:
+        LOG_DEBUG("-->JTAG_SCAN\r\n");
+        // cmsis_dap_execute_scan(cmd);
         break;
     case JTAG_TLR_RESET:
         LOG_DEBUG("-->JTAG_TLR_RESET\r\n");
         // cmsis_dap_flush();
         // cmsis_dap_execute_tlr_reset(cmd);
         break;
-    case JTAG_SCAN:
-        LOG_DEBUG("-->JTAG_SCAN\r\n");
-        // cmsis_dap_execute_scan(cmd);
+    case JTAG_RUNTEST:
+        LOG_DEBUG("-->JTAG_RUNTEST\r\n");
+        // cmsis_dap_execute_runtest(cmd);
+        break;
+    case JTAG_RESET:
+        LOG_DEBUG("-->JTAG_RESET\r\n");
+        // cmsis_dap_execute_runtest(cmd);
         break;
     case JTAG_PATHMOVE:
         LOG_DEBUG("-->JTAG_PATHMOVE\r\n");
         // cmsis_dap_execute_pathmove(cmd);
         break;
-    case JTAG_RUNTEST:
-        LOG_DEBUG("-->JTAG_RUNTEST\r\n");
-        // cmsis_dap_execute_runtest(cmd);
+    case JTAG_SLEEP:
+        LOG_DEBUG("-->JTAG_SLEEP\r\n");
+        // cmsis_dap_flush();
+        // cmsis_dap_execute_sleep(cmd);
         break;
     case JTAG_STABLECLOCKS:
         LOG_DEBUG("-->JTAG_STABLECLOCKS\r\n");
