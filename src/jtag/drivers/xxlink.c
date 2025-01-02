@@ -28,11 +28,27 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include <stdio.h>
+#include "debug.h"
+#include "dbg-cfg.h"
+#include "dbg-target.h"
+#include "link.h"
+
+
 static uint16_t xxlink_vid = 0x0403;
 static uint16_t xxlink_pid = 0x6001;
 
+static dbg_server_cfg_t cfg;
+static void *cklink_handle;
+
 static int xxlink_init(void)
 {
+    struct halt_info info;
+    init_default_config(&cfg);
+    link_init(&cfg);
+    cklink_handle = link_open(&cfg, serial_num);
+    link_config(cklink_handle, LINK_CONFIG_CDI, LINK_CONFIG_CDI_VALUE_cJTAG);
+    link_show_info(cklink_handle, &cfg, (void (*)(const char *, ...))printf);
     LOG_DEBUG("xxlink_init");
     return ERROR_OK;
 }
