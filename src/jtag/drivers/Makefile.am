@@ -206,6 +206,11 @@ DRIVERFILES += %D%/am335xgpio.c
 endif
 if XXLINK
 DRIVERFILES += %D%/xxlink.c
+%C%_libocdjtagdrivers_la_LIBADD += 
+%C%_libocdjtagdrivers_la_CPPFLAGS += \
+	-I$(srcdir)/%D%/cklink/include \
+	-I$(srcdir)/%D%/cklink/include/csky \
+	-I$(srcdir)/%D%/cklink/include/riscv
 endif
 
 DRIVERHEADERS = \

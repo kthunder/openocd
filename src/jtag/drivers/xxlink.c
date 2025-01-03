@@ -34,10 +34,10 @@
 #include "dbg-target.h"
 #include "link.h"
 
-
 static uint16_t xxlink_vid = 0x0403;
 static uint16_t xxlink_pid = 0x6001;
 
+char serial_num[] = "CKLink_Lite_V2-T00000003636503C565C894";
 static dbg_server_cfg_t cfg;
 static void *cklink_handle;
 
