@@ -205,8 +205,9 @@ if AM335XGPIO
 DRIVERFILES += %D%/am335xgpio.c
 endif
 if XXLINK
+#AM_LDFLAGS += -L$(srcdir)/%D%/cklink/mingw32_libs
 DRIVERFILES += %D%/xxlink.c
-%C%_libocdjtagdrivers_la_LIBADD += 
+#%C%_libocdjtagdrivers_la_LIBADD += -lUtils -lCklink
 %C%_libocdjtagdrivers_la_CPPFLAGS += \
 	-I$(srcdir)/%D%/cklink/include \
 	-I$(srcdir)/%D%/cklink/include/csky \
