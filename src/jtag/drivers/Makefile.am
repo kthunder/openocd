@@ -204,6 +204,11 @@ endif
 if AM335XGPIO
 DRIVERFILES += %D%/am335xgpio.c
 endif
+if XXLINK
+DRIVERFILES += %D%/xxlink.c
+%C%_libocdjtagdrivers_la_CPPFLAGS += $(LIBCKLINK_CFLAGS)
+%C%_libocdjtagdrivers_la_LIBADD += $(LIBCKLINK_LIBS)
+endif
 
 DRIVERHEADERS = \
 	%D%/bitbang.h \

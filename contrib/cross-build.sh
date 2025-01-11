@@ -22,7 +22,7 @@
 # Usage:
 # export LIBUSB1_SRC=/path/to/libusb-1.0
 # export HIDAPI_SRC=/path/to/hidapi
-# export OPENOCD_CONFIG="--enable-..."
+export OPENOCD_CONFIG="--enable-xxlink"
 # cd /work/dir
 # /path/to/openocd/contrib/cross-build.sh <host-triplet>
 #
@@ -39,24 +39,30 @@ WORK_DIR=$PWD
 : ${OPENOCD_SRC:="`dirname "$0"`/.."}
 : ${LIBUSB1_SRC:=/path/to/libusb1}
 : ${HIDAPI_SRC:=/path/to/hidapi}
+: ${CONFUSE_SRC:=/path/to/confuse}
 : ${LIBFTDI_SRC:=/path/to/libftdi}
 : ${CAPSTONE_SRC:=/path/to/capstone}
 : ${LIBJAYLINK_SRC:=/path/to/libjaylink}
+: ${LIBCKLINK_SRC:=/path/to/libcklink}
 
 OPENOCD_SRC=`readlink -m $OPENOCD_SRC`
 LIBUSB1_SRC=`readlink -m $LIBUSB1_SRC`
 HIDAPI_SRC=`readlink -m $HIDAPI_SRC`
+CONFUSE_SRC=`readlink -m $CONFUSE_SRC`
 LIBFTDI_SRC=`readlink -m $LIBFTDI_SRC`
 CAPSTONE_SRC=`readlink -m $CAPSTONE_SRC`
 LIBJAYLINK_SRC=`readlink -m $LIBJAYLINK_SRC`
+LIBCKLINK_SRC=`readlink -m $LIBCKLINK_SRC`
 
 HOST_TRIPLET=$1
 BUILD_DIR=$WORK_DIR/$HOST_TRIPLET-build
 LIBUSB1_BUILD_DIR=$BUILD_DIR/libusb1
 HIDAPI_BUILD_DIR=$BUILD_DIR/hidapi
+CONFUSE_BUILD_DIR=$BUILD_DIR/confuse
 LIBFTDI_BUILD_DIR=$BUILD_DIR/libftdi
 CAPSTONE_BUILD_DIR=$BUILD_DIR/capstone
 LIBJAYLINK_BUILD_DIR=$BUILD_DIR/libjaylink
+LIBCKLINK_BUILD_DIR=$BUILD_DIR/libcklink
 OPENOCD_BUILD_DIR=$BUILD_DIR/openocd
 
 ## Root of host file tree
@@ -99,6 +105,24 @@ chmod +x $PKG_CONFIG
 rm -rf $SYSROOT $BUILD_DIR
 mkdir -p $SYSROOT
 
+# libcklink build & install into sysroot
+# if [ -d $LIBCKLINK_SRC ] ; then
+#   mkdir -p $LIBCKLINK_BUILD_DIR
+#   cd $LIBCKLINK_BUILD_DIR
+
+#   # fix <toolchain>.cmake file
+#   ESCAPED_SYSROOT=$(printf '%s\n' "$SYSROOT" | sed -e 's/[\/&]/\\&/g')
+#   sed -i -E "s/(SET\(CMAKE_FIND_ROOT_PATH\s+).+\)/\1${ESCAPED_SYSROOT})/" \
+#     ${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
+
+#   cmake $LIBCKLINK_CONFIG \
+#     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+#     -DCMAKE_TOOLCHAIN_FILE=${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
+#     -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
+#     $LIBCKLINK_SRC
+#   make install DESTDIR=$SYSROOT
+# fi
+
 # libusb-1.0 build & install into sysroot
 if [ -d $LIBUSB1_SRC ] ; then
   mkdir -p $LIBUSB1_BUILD_DIR
@@ -121,6 +145,17 @@ if [ -d $HIDAPI_SRC ] ; then
   make install DESTDIR=$SYSROOT
 fi
 
+# confuse build & install into sysroot
+if [ -d $CONFUSE_SRC ] ; then
+  mkdir -p $CONFUSE_BUILD_DIR
+  cd $CONFUSE_BUILD_DIR
+  $CONFUSE_SRC/configure --host=$HOST_TRIPLET \
+    --with-sysroot=$SYSROOT --prefix=$PREFIX --disable-udev --disable-examples \
+    $CONFUSE_CONFIG
+  make -j $MAKE_JOBS
+  make install DESTDIR=$SYSROOT
+fi
+
 # libftdi build & install into sysroot
 if [ -d $LIBFTDI_SRC ] ; then
   mkdir -p $LIBFTDI_BUILD_DIR
@@ -136,7 +171,7 @@ if [ -d $LIBFTDI_SRC ] ; then
 
   cmake $LIBFTDI_CONFIG \
     -DCMAKE_TOOLCHAIN_FILE=${LIBFTDI_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
-    -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+    -DCMAKE_INSTALL_PREFIX=${PREFIX} -DEXAMPLES=0 \
     -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
     $LIBFTDI_SRC
   make install DESTDIR=$SYSROOT
@@ -178,10 +213,12 @@ cd $OPENOCD_BUILD_DIR
 $OPENOCD_SRC/configure --build=`$OPENOCD_SRC/config.guess` --host=$HOST_TRIPLET \
 --with-sysroot=$SYSROOT --prefix=$PREFIX \
 $OPENOCD_CONFIG
-make -j $MAKE_JOBS
+# bear -- make -j $MAKE_JOBS CFLAGS+="-Wno-error"
+make -j $MAKE_JOBS CFLAGS+="-Wno-error"
 make install-strip DESTDIR=$SYSROOT
 
 # Separate OpenOCD install w/o dependencies. OpenOCD will have to be linked
 # statically or have dependencies packaged/installed separately.
-make install-strip DESTDIR=$PACKAGE_DIR
+# make install-strip DESTDIR=$PACKAGE_DIR
 
+cp $SYSROOT/usr/* /mnt/c/Users/Administrator/Desktop/openocd/ -r
