@@ -23,6 +23,8 @@
 #include "debug_defines.h"
 #include <helper/bits.h>
 
+#include "port_link.h"
+
 #define get_field(reg, mask) (((reg) & (mask)) / ((mask) & ~((mask) << 1)))
 #define set_field(reg, mask, val) (((reg) & ~(mask)) | (((val) * ((mask) & ~((mask) << 1))) & (mask)))
 
@@ -403,6 +405,7 @@ static uint32_t dtmcontrol_scan(struct target *target, uint32_t out)
 	}
 
 	uint32_t in = buf_get_u32(field.in_value, 0, 32);
+	in = cklink_read_DTMCS();
 	LOG_DEBUG("DTMCONTROL: 0x%x -> 0x%x", out, in);
 
 	return in;

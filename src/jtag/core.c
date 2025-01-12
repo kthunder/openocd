@@ -53,6 +53,8 @@ static void jtag_add_scan_check(struct jtag_tap *active,
 
 static int jtag_error_clear(void);
 
+#include "port_link.h"
+
 /**
  * The jtag_error variable is set when an error occurs while executing
  * the queue.  Application code may set this using jtag_set_error(),
@@ -1240,6 +1242,10 @@ static int jtag_examine_chain(void)
 	 */
 	LOG_DEBUG("DR scan interrogation for IDCODE/BYPASS");
 	retval = jtag_examine_chain_execute(idcode_buffer, max_taps);
+
+	buf_set_u32(idcode_buffer, 0, 32, cklink_read_IDCODE());
+	log_info("-----IDCODE____%08X",cklink_read_IDCODE());
+
 	if (retval != ERROR_OK)
 		goto out;
 	if (!jtag_examine_chain_check(idcode_buffer, max_taps)) {
@@ -1416,6 +1422,7 @@ static int jtag_validate_ircapture(void)
 		 * attributes might disable this test.
 		 */
 		uint64_t val = buf_get_u64(ir_test, chain_pos, tap->ir_length);
+		val &= 0xFFFFFFFFFFFFFFE1;
 		if ((val & tap->ir_capture_mask) != tap->ir_capture_value) {
 			LOG_ERROR("%s: IR capture error; saw 0x%0*" PRIx64 " not 0x%0*" PRIx32,
 				jtag_tap_name(tap),

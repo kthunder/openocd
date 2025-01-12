@@ -3,6 +3,7 @@
 noinst_LTLIBRARIES += %D%/libjtag.la
 
 %C%_libjtag_la_LIBADD =
+%C%_libjtag_la_CPPFLAGS = $(AM_CPPFLAGS)
 
 if HLADAPTER
 include %D%/hla/Makefile.am
@@ -11,6 +12,9 @@ endif
 
 include %D%/drivers/Makefile.am
 %C%_libjtag_la_LIBADD += $(top_builddir)/%D%/drivers/libocdjtagdrivers.la
+
+core_CPPFLAGS = $(LIBCKLINK_CFLAGS)
+core_LIBADD = $(LIBCKLINK_LIBS)
 
 %C%_libjtag_la_SOURCES = \
 	%D%/adapter.c \
@@ -31,3 +35,6 @@ include %D%/drivers/Makefile.am
 	%D%/tcl.h
 
 STARTUP_TCL_SRCS += %D%/startup.tcl
+
+%C%_libjtag_la_CPPFLAGS += $(core_CPPFLAGS)
+%C%_libjtag_la_LIBADD += $(core_LIBADD)

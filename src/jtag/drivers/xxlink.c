@@ -28,6 +28,8 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "port_link.h"
+
 void print_hex(uint8_t *data, int len)
 {
     for (int i = 0; i < len; i++)
@@ -38,13 +40,14 @@ void print_hex(uint8_t *data, int len)
 }
 static int xxlink_init(void)
 {
-    LOG_DEBUG("xxlink_init");
+    cklink_init();
+    log_info("xxlink_init");
     return ERROR_OK;
 }
 
 static int xxlink_quit(void)
 {
-    LOG_DEBUG("xxlink_quit");
+    log_info("xxlink_quit");
     return ERROR_OK;
 }
 
@@ -57,7 +60,7 @@ static int xxlink_speed_div(int divisor, int *khz)
         *khz = 2000;
     else
         *khz = 3000 / divisor;
-    LOG_DEBUG("xxlink_speed_div divisor=%d rate %d khz", divisor, *khz);
+    log_info("xxlink_speed_div divisor=%d rate %d khz", divisor, *khz);
     return ERROR_OK;
 }
 
@@ -65,7 +68,7 @@ static int xxlink_khz(int khz, int *divisor)
 {
     if (khz == 0)
     {
-        LOG_DEBUG("RCLK not supported");
+        log_info("RCLK not supported");
         return ERROR_FAIL;
     }
 
@@ -80,7 +83,7 @@ static int xxlink_khz(int khz, int *divisor)
         if (*divisor > 0x3FFF)
             *divisor = 0x3FFF;
     }
-    LOG_DEBUG("xxlink_khz %d divisor=%d", khz, *divisor);
+    log_info("xxlink_khz %d divisor=%d", khz, *divisor);
     return ERROR_OK;
 }
 
@@ -88,7 +91,7 @@ static int xxlink_speed(int divisor)
 {
     int baud = (divisor == 0) ? 3000000 : (divisor == 1) ? 2000000
                                                          : 3000000 / divisor;
-    LOG_DEBUG("xxlink_speed(%d) rate %d bits/sec", divisor, baud);
+    log_info("xxlink_speed(%d) rate %d bits/sec", divisor, baud);
 
     // if (jtag_libusb_control_transfer(adapter,
     //   LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT,
@@ -130,37 +133,37 @@ static const struct command_registration xxlink_command_handlers[] = {
  * JTAG_RUNTEST, JTAG_STABLECLOCKS? */
 static void xxlink_execute_command(struct jtag_command *cmd)
 {
-    // LOG_DEBUG("xxlink_execute_command:jtag interface cmd");
+    // log_info("xxlink_execute_command:jtag interface cmd");
     switch (cmd->type)
     {
     case JTAG_SCAN:
-        LOG_DEBUG("-->JTAG_SCAN");
+        log_info("-->JTAG_SCAN");
         break;
     case JTAG_TLR_RESET:
         // JTAG 测试逻辑复位（Test-Logic-Reset）操作
         // 重置 JTAG 状态机
-        LOG_DEBUG("-->JTAG_TLR_RESET");
+        log_info("-->JTAG_TLR_RESET");
         break;
     case JTAG_RUNTEST:
-        LOG_DEBUG("-->JTAG_RUNTEST");
+        log_info("-->JTAG_RUNTEST");
         //  cmsis_dap_execute_runtest(cmd);
         break;
     case JTAG_RESET:
-        LOG_DEBUG("-->JTAG_RESET");
+        log_info("-->JTAG_RESET");
         break;
     case JTAG_PATHMOVE:
-        LOG_DEBUG("-->JTAG_PATHMOVE");
+        log_info("-->JTAG_PATHMOVE");
         //  cmsis_dap_execute_pathmove(cmd);
         break;
     case JTAG_SLEEP:
-        LOG_DEBUG("-->JTAG_SLEEP");
+        log_info("-->JTAG_SLEEP");
         Sleep(cmd->cmd.sleep->us);
         break;
     case JTAG_STABLECLOCKS:
-        LOG_DEBUG("-->JTAG_STABLECLOCKS");
+        log_info("-->JTAG_STABLECLOCKS");
         break;
     case JTAG_TMS:
-        LOG_DEBUG("-->JTAG_TMS");
+        log_info("-->JTAG_TMS");
         break;
     default:
         LOG_ERROR("BUG: unknown JTAG command type 0x%X encountered", cmd->type);

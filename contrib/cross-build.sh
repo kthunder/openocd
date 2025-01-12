@@ -72,7 +72,7 @@ SYSROOT=$WORK_DIR/$HOST_TRIPLET-root
 : ${PREFIX=/usr}
 
 ## Make parallel jobs
-: ${MAKE_JOBS:=1}
+: ${MAKE_JOBS:=12}
 
 ## OpenOCD-only install dir for packaging
 : ${OPENOCD_TAG:=`git --git-dir=$OPENOCD_SRC/.git describe --tags`}
@@ -102,117 +102,117 @@ EOF
 chmod +x $PKG_CONFIG
 
 # Clear out work dir
-rm -rf $SYSROOT $BUILD_DIR
+# rm -rf $SYSROOT $BUILD_DIR
 mkdir -p $SYSROOT
 
 # libcklink build & install into sysroot
-# if [ -d $LIBCKLINK_SRC ] ; then
-#   mkdir -p $LIBCKLINK_BUILD_DIR
-#   cd $LIBCKLINK_BUILD_DIR
-
-#   # fix <toolchain>.cmake file
-#   ESCAPED_SYSROOT=$(printf '%s\n' "$SYSROOT" | sed -e 's/[\/&]/\\&/g')
-#   sed -i -E "s/(SET\(CMAKE_FIND_ROOT_PATH\s+).+\)/\1${ESCAPED_SYSROOT})/" \
-#     ${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
-
-#   cmake $LIBCKLINK_CONFIG \
-#     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-#     -DCMAKE_TOOLCHAIN_FILE=${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
-#     -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
-#     $LIBCKLINK_SRC
-#   make install DESTDIR=$SYSROOT
-# fi
-
-# libusb-1.0 build & install into sysroot
-if [ -d $LIBUSB1_SRC ] ; then
-  mkdir -p $LIBUSB1_BUILD_DIR
-  cd $LIBUSB1_BUILD_DIR
-  $LIBUSB1_SRC/configure --build=`$LIBUSB1_SRC/config.guess` --host=$HOST_TRIPLET \
-  --with-sysroot=$SYSROOT --prefix=$PREFIX \
-  $LIBUSB1_CONFIG
-  make -j $MAKE_JOBS
-  make install DESTDIR=$SYSROOT
-fi
-
-# hidapi build & install into sysroot
-if [ -d $HIDAPI_SRC ] ; then
-  mkdir -p $HIDAPI_BUILD_DIR
-  cd $HIDAPI_BUILD_DIR
-  $HIDAPI_SRC/configure --build=`$HIDAPI_SRC/config.guess` --host=$HOST_TRIPLET \
-    --with-sysroot=$SYSROOT --prefix=$PREFIX \
-    $HIDAPI_CONFIG
-  make -j $MAKE_JOBS
-  make install DESTDIR=$SYSROOT
-fi
-
-# confuse build & install into sysroot
-if [ -d $CONFUSE_SRC ] ; then
-  mkdir -p $CONFUSE_BUILD_DIR
-  cd $CONFUSE_BUILD_DIR
-  $CONFUSE_SRC/configure --host=$HOST_TRIPLET \
-    --with-sysroot=$SYSROOT --prefix=$PREFIX --disable-udev --disable-examples \
-    $CONFUSE_CONFIG
-  make -j $MAKE_JOBS
-  make install DESTDIR=$SYSROOT
-fi
-
-# libftdi build & install into sysroot
-if [ -d $LIBFTDI_SRC ] ; then
-  mkdir -p $LIBFTDI_BUILD_DIR
-  cd $LIBFTDI_BUILD_DIR
-  # note : libftdi versions < 1.5 requires libusb1 static
-  #   hint use : # export LIBUSB1_CONFIG="--enable-static ..."
-  #   not needed since libftdi-1.5 when LIBFTDI_CONFIG="-DSTATICLIBS=OFF ..."
+if [ -d $LIBCKLINK_SRC ] ; then
+  mkdir -p $LIBCKLINK_BUILD_DIR
+  cd $LIBCKLINK_BUILD_DIR
 
   # fix <toolchain>.cmake file
   ESCAPED_SYSROOT=$(printf '%s\n' "$SYSROOT" | sed -e 's/[\/&]/\\&/g')
   sed -i -E "s/(SET\(CMAKE_FIND_ROOT_PATH\s+).+\)/\1${ESCAPED_SYSROOT})/" \
-    ${LIBFTDI_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
+    ${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
 
-  cmake $LIBFTDI_CONFIG \
-    -DCMAKE_TOOLCHAIN_FILE=${LIBFTDI_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
-    -DCMAKE_INSTALL_PREFIX=${PREFIX} -DEXAMPLES=0 \
+  cmake $LIBCKLINK_CONFIG \
+    -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+    -DCMAKE_TOOLCHAIN_FILE=${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
     -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
-    $LIBFTDI_SRC
+    $LIBCKLINK_SRC
   make install DESTDIR=$SYSROOT
 fi
+# cd ./openocd/bin;.\openocd.exe -f xxlink.cfg 
+# # libusb-1.0 build & install into sysroot
+# if [ -d $LIBUSB1_SRC ] ; then
+#   mkdir -p $LIBUSB1_BUILD_DIR
+#   cd $LIBUSB1_BUILD_DIR
+#   $LIBUSB1_SRC/configure --build=`$LIBUSB1_SRC/config.guess` --host=$HOST_TRIPLET \
+#   --with-sysroot=$SYSROOT --prefix=$PREFIX \
+#   $LIBUSB1_CONFIG
+#   make -j $MAKE_JOBS
+#   make install DESTDIR=$SYSROOT
+# fi
 
-# capstone build & install into sysroot
-if [ -d $CAPSTONE_SRC ] ; then
-  mkdir -p $CAPSTONE_BUILD_DIR
-  cd $CAPSTONE_BUILD_DIR
-  cp -r $CAPSTONE_SRC/* .
-  make install DESTDIR=$SYSROOT PREFIX=$PREFIX \
-    CROSS="${HOST_TRIPLET}-" \
-    $CAPSTONE_CONFIG
-  # fix the generated capstone.pc
-  CAPSTONE_PC_FILE=${SYSROOT}${PREFIX}/lib/pkgconfig/capstone.pc
-  sed -i '/^libdir=/d' $CAPSTONE_PC_FILE
-  sed -i '/^includedir=/d' $CAPSTONE_PC_FILE
-  sed -i '/^archive=/d' $CAPSTONE_PC_FILE
-  sed -i '1s;^;prefix=/usr \
-exec_prefix=${prefix} \
-libdir=${exec_prefix}/lib \
-includedir=${prefix}/include/capstone\n\n;' $CAPSTONE_PC_FILE
-fi
+# # hidapi build & install into sysroot
+# if [ -d $HIDAPI_SRC ] ; then
+#   mkdir -p $HIDAPI_BUILD_DIR
+#   cd $HIDAPI_BUILD_DIR
+#   $HIDAPI_SRC/configure --build=`$HIDAPI_SRC/config.guess` --host=$HOST_TRIPLET \
+#     --with-sysroot=$SYSROOT --prefix=$PREFIX \
+#     $HIDAPI_CONFIG
+#   make -j $MAKE_JOBS
+#   make install DESTDIR=$SYSROOT
+# fi
 
-# libjaylink build & install into sysroot
-if [ -d $LIBJAYLINK_SRC ] ; then
-  mkdir -p $LIBJAYLINK_BUILD_DIR
-  cd $LIBJAYLINK_BUILD_DIR
-  $LIBJAYLINK_SRC/configure --build=`$LIBJAYLINK_SRC/config.guess` --host=$HOST_TRIPLET \
-    --with-sysroot=$SYSROOT --prefix=$PREFIX \
-    $LIBJAYLINK_CONFIG
-  make -j $MAKE_JOBS
-  make install DESTDIR=$SYSROOT
-fi
+# # confuse build & install into sysroot
+# if [ -d $CONFUSE_SRC ] ; then
+#   mkdir -p $CONFUSE_BUILD_DIR
+#   cd $CONFUSE_BUILD_DIR
+#   $CONFUSE_SRC/configure --host=$HOST_TRIPLET \
+#     --with-sysroot=$SYSROOT --prefix=$PREFIX --disable-udev --disable-examples \
+#     $CONFUSE_CONFIG
+#   make -j $MAKE_JOBS
+#   make install DESTDIR=$SYSROOT
+# fi
+
+# # libftdi build & install into sysroot
+# if [ -d $LIBFTDI_SRC ] ; then
+#   mkdir -p $LIBFTDI_BUILD_DIR
+#   cd $LIBFTDI_BUILD_DIR
+#   # note : libftdi versions < 1.5 requires libusb1 static
+#   #   hint use : # export LIBUSB1_CONFIG="--enable-static ..."
+#   #   not needed since libftdi-1.5 when LIBFTDI_CONFIG="-DSTATICLIBS=OFF ..."
+
+#   # fix <toolchain>.cmake file
+#   ESCAPED_SYSROOT=$(printf '%s\n' "$SYSROOT" | sed -e 's/[\/&]/\\&/g')
+#   sed -i -E "s/(SET\(CMAKE_FIND_ROOT_PATH\s+).+\)/\1${ESCAPED_SYSROOT})/" \
+#     ${LIBFTDI_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
+
+#   cmake $LIBFTDI_CONFIG \
+#     -DCMAKE_TOOLCHAIN_FILE=${LIBFTDI_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
+#     -DCMAKE_INSTALL_PREFIX=${PREFIX} -DEXAMPLES=0 \
+#     -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
+#     $LIBFTDI_SRC
+#   make install DESTDIR=$SYSROOT
+# fi
+
+# # capstone build & install into sysroot
+# if [ -d $CAPSTONE_SRC ] ; then
+#   mkdir -p $CAPSTONE_BUILD_DIR
+#   cd $CAPSTONE_BUILD_DIR
+#   cp -r $CAPSTONE_SRC/* .
+#   make install DESTDIR=$SYSROOT PREFIX=$PREFIX \
+#     CROSS="${HOST_TRIPLET}-" \
+#     $CAPSTONE_CONFIG
+#   # fix the generated capstone.pc
+#   CAPSTONE_PC_FILE=${SYSROOT}${PREFIX}/lib/pkgconfig/capstone.pc
+#   sed -i '/^libdir=/d' $CAPSTONE_PC_FILE
+#   sed -i '/^includedir=/d' $CAPSTONE_PC_FILE
+#   sed -i '/^archive=/d' $CAPSTONE_PC_FILE
+#   sed -i '1s;^;prefix=/usr \
+# exec_prefix=${prefix} \
+# libdir=${exec_prefix}/lib \
+# includedir=${prefix}/include/capstone\n\n;' $CAPSTONE_PC_FILE
+# fi
+
+# # libjaylink build & install into sysroot
+# if [ -d $LIBJAYLINK_SRC ] ; then
+#   mkdir -p $LIBJAYLINK_BUILD_DIR
+#   cd $LIBJAYLINK_BUILD_DIR
+#   $LIBJAYLINK_SRC/configure --build=`$LIBJAYLINK_SRC/config.guess` --host=$HOST_TRIPLET \
+#     --with-sysroot=$SYSROOT --prefix=$PREFIX \
+#     $LIBJAYLINK_CONFIG
+#   make -j $MAKE_JOBS
+#   make install DESTDIR=$SYSROOT
+# fi
 
 # OpenOCD build & install into sysroot
 mkdir -p $OPENOCD_BUILD_DIR
 cd $OPENOCD_BUILD_DIR
-$OPENOCD_SRC/configure --build=`$OPENOCD_SRC/config.guess` --host=$HOST_TRIPLET \
---with-sysroot=$SYSROOT --prefix=$PREFIX \
-$OPENOCD_CONFIG
+# $OPENOCD_SRC/configure --build=`$OPENOCD_SRC/config.guess` --host=$HOST_TRIPLET \
+# --with-sysroot=$SYSROOT --prefix=$PREFIX \
+# $OPENOCD_CONFIG
 # bear -- make -j $MAKE_JOBS CFLAGS+="-Wno-error"
 make -j $MAKE_JOBS CFLAGS+="-Wno-error"
 make install-strip DESTDIR=$SYSROOT
