@@ -534,6 +534,14 @@ static dmi_status_t dmi_scan(struct target *target, uint32_t *address_in,
 	if (address_in)
 		*address_in = buf_get_u32(in, DTM_DMI_ADDRESS_OFFSET, info->abits);
 	dump_field(idle_count, &field);
+	log_info("---==dmi_scan==---");
+	log_info("     write   op   %d",op);
+	log_info("     write   addr %02X",address_out);
+	log_info("     write   data %08X",data_out);
+	// log_info("     read    op   %d",buf_get_u32(in, DTM_DMI_OP_OFFSET, DTM_DMI_OP_LENGTH));
+	// log_info("     read    addr %02X",buf_get_u32(in, DTM_DMI_ADDRESS_OFFSET, info->abits));
+	log_info("     read    data %08X",buf_get_u32(in, DTM_DMI_DATA_OFFSET, DTM_DMI_DATA_LENGTH));
+	
 	return buf_get_u32(in, DTM_DMI_OP_OFFSET, DTM_DMI_OP_LENGTH);
 }
 

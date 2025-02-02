@@ -121,6 +121,7 @@ m4_define([ADAPTER_OPT], [m4_translit(ADAPTER_ARG($1), [_], [-])])
 
 m4_define([USB1_ADAPTERS],
 	[[[ftdi], [MPSSE mode of FTDI based devices], [FTDI]],
+  [[xxlink], [XXLINK devices], [XXLINK]],
 	[[stlink], [ST-Link Programmer], [HLADAPTER_STLINK]],
 	[[ti_icdi], [TI ICDI JTAG Programmer], [HLADAPTER_ICDI]],
 	[[ulink], [Keil ULINK JTAG Programmer], [ULINK]],
@@ -312,6 +313,10 @@ AC_ARG_ENABLE([parport_giveio],
 AC_ARG_ENABLE([jtag_vpi],
   AS_HELP_STRING([--enable-jtag_vpi], [Enable building support for JTAG VPI]),
   [build_jtag_vpi=$enableval], [build_jtag_vpi=no])
+
+AC_ARG_ENABLE([xxlink],
+  AS_HELP_STRING([--enable-xxlink], [Enable building support for XXLINK]),
+  [build_xxlink=$enableval], [build_xxlink=no])
 
 AC_ARG_ENABLE([vdebug],
   AS_HELP_STRING([--enable-vdebug], [Enable building support for Cadence Virtual Debug Interface]),
@@ -764,6 +769,12 @@ AS_IF([test "x$enable_esp_usb_jtag" != "xno"], [
   build_bitq=yes
 ])
 
+AS_IF([test "x$build_xxlink" = "xyes"], [
+  AC_DEFINE([BUILD_XXLINK], [1], [1 if you want XXLINK.])
+], [
+  AC_DEFINE([BUILD_XXLINK], [0], [0 if you don't want XXLINK.])
+])
+
 AM_CONDITIONAL([RELEASE], [test "x$build_release" = "xyes"])
 AM_CONDITIONAL([PARPORT], [test "x$build_parport" = "xyes"])
 AM_CONDITIONAL([GIVEIO], [test "x$parport_use_giveio" = "xyes"])
@@ -794,6 +805,7 @@ AM_CONDITIONAL([USE_LIBJAYLINK], [test "x$use_libjaylink" = "xyes"])
 AM_CONDITIONAL([RSHIM], [test "x$build_rshim" = "xyes"])
 AM_CONDITIONAL([DMEM], [test "x$build_dmem" = "xyes"])
 AM_CONDITIONAL([HAVE_CAPSTONE], [test "x$enable_capstone" != "xno"])
+AM_CONDITIONAL([XXLINK], [test "x$build_xxlink" = "xyes"])
 
 AM_CONDITIONAL([INTERNAL_JIMTCL], [test "x$use_internal_jimtcl" = "xyes"])
 AM_CONDITIONAL([HAVE_JIMTCL_PKG_CONFIG], [test "x$have_jimtcl_pkg_config" = "xyes"])
