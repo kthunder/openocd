@@ -206,6 +206,7 @@ DRIVERFILES += %D%/am335xgpio.c
 endif
 if XXLINK
 DRIVERFILES += %D%/xxlink.c
+DRIVERFILES += %D%/xxlink_ser.c
 endif
 
 DRIVERHEADERS = \

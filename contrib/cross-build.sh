@@ -43,7 +43,7 @@ WORK_DIR=$PWD
 : ${LIBFTDI_SRC:=/path/to/libftdi}
 : ${CAPSTONE_SRC:=/path/to/capstone}
 : ${LIBJAYLINK_SRC:=/path/to/libjaylink}
-: ${LIBCKLINK_SRC:=/path/to/libcklink}
+# : ${LIBCKLINK_SRC:=/path/to/libcklink}
 
 OPENOCD_SRC=`readlink -m $OPENOCD_SRC`
 LIBUSB1_SRC=`readlink -m $LIBUSB1_SRC`
@@ -62,7 +62,7 @@ CONFUSE_BUILD_DIR=$BUILD_DIR/confuse
 LIBFTDI_BUILD_DIR=$BUILD_DIR/libftdi
 CAPSTONE_BUILD_DIR=$BUILD_DIR/capstone
 LIBJAYLINK_BUILD_DIR=$BUILD_DIR/libjaylink
-LIBCKLINK_BUILD_DIR=$BUILD_DIR/libcklink
+# LIBCKLINK_BUILD_DIR=$BUILD_DIR/libcklink
 OPENOCD_BUILD_DIR=$BUILD_DIR/openocd
 
 ## Root of host file tree
@@ -105,24 +105,6 @@ chmod +x $PKG_CONFIG
 # rm -rf $SYSROOT $BUILD_DIR
 mkdir -p $SYSROOT
 
-# libcklink build & install into sysroot
-if [ -d $LIBCKLINK_SRC ] ; then
-  mkdir -p $LIBCKLINK_BUILD_DIR
-  cd $LIBCKLINK_BUILD_DIR
-
-  # fix <toolchain>.cmake file
-  ESCAPED_SYSROOT=$(printf '%s\n' "$SYSROOT" | sed -e 's/[\/&]/\\&/g')
-  sed -i -E "s/(SET\(CMAKE_FIND_ROOT_PATH\s+).+\)/\1${ESCAPED_SYSROOT})/" \
-    ${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake
-
-  cmake $LIBCKLINK_CONFIG \
-    -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-    -DCMAKE_TOOLCHAIN_FILE=${LIBCKLINK_SRC}/cmake/Toolchain-${HOST_TRIPLET}.cmake \
-    -DPKG_CONFIG_EXECUTABLE=`which pkg-config` \
-    $LIBCKLINK_SRC
-  make install DESTDIR=$SYSROOT
-fi
-# cd ./openocd/bin;.\openocd.exe -f xxlink.cfg 
 # # libusb-1.0 build & install into sysroot
 # if [ -d $LIBUSB1_SRC ] ; then
 #   mkdir -p $LIBUSB1_BUILD_DIR
