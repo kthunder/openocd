@@ -50,7 +50,7 @@ export LIBJAYLINK_CONFIG="--enable-shared --disable-static"
 :    ${LIBFTDI_SRC:=$OPENOCD_SRC/../libftdi1-1.5}
 :   ${CAPSTONE_SRC:=$OPENOCD_SRC/../capstone-4.0.2}
 : ${LIBJAYLINK_SRC:=$OPENOCD_SRC/../libjaylink-0.3.1}
-:     ${JIMTCL_SRC:=/path/to/jimtcl}
+:     ${JIMTCL_SRC:=$OPENOCD_SRC/../jimtcl-0.83}
 
 OPENOCD_SRC=`readlink -m $OPENOCD_SRC`
 LIBUSB1_SRC=`readlink -m $LIBUSB1_SRC`
@@ -200,17 +200,17 @@ mkdir -p $SYSROOT
 #   make install DESTDIR=$SYSROOT
 # fi
 
-# jimtcl build & install into sysroot
-if [ -d $JIMTCL_SRC ] ; then
-  mkdir -p $JIMTCL_BUILD_DIR
-  cd $JIMTCL_BUILD_DIR
-  $JIMTCL_SRC/configure --host=$HOST_TRIPLET --prefix=$PREFIX \
-    $JIMTCL_CONFIG
-  make -j $MAKE_JOBS
-  # Running "make" does not create this file for static builds on Windows but "make install" still expects it
-  touch $JIMTCL_BUILD_DIR/build-jim-ext
-  make install DESTDIR=$SYSROOT
-fi
+# # jimtcl build & install into sysroot
+# if [ -d $JIMTCL_SRC ] ; then
+#   mkdir -p $JIMTCL_BUILD_DIR
+#   cd $JIMTCL_BUILD_DIR
+#   $JIMTCL_SRC/configure --host=$HOST_TRIPLET --prefix=$PREFIX \
+#     $JIMTCL_CONFIG
+#   make -j $MAKE_JOBS
+#   # Running "make" does not create this file for static builds on Windows but "make install" still expects it
+#   touch $JIMTCL_BUILD_DIR/build-jim-ext
+#   make install DESTDIR=$SYSROOT
+# fi
 
 # OpenOCD build & install into sysroot
 if [ -d $OPENOCD_SRC ] ; then
@@ -219,7 +219,7 @@ if [ -d $OPENOCD_SRC ] ; then
   # $OPENOCD_SRC/configure --build=`$OPENOCD_SRC/config.guess` --host=$HOST_TRIPLET \
   #   --with-sysroot=$SYSROOT --prefix=$PREFIX \
   #   $OPENOCD_CONFIG
-  # bear -- make -j $MAKE_JOBS CFLAGS+="-Wno-error"
+  bear -- make -j $MAKE_JOBS CFLAGS+="-Wno-error"
   make -j $MAKE_JOBS CFLAGS+="-Wno-error"
   make install-strip DESTDIR=$SYSROOT
   # Separate OpenOCD install w/o dependencies. OpenOCD will have to be linked

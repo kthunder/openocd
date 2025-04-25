@@ -28,6 +28,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdint.h>
 
 extern int klink_usb_open(uint16_t vid, uint16_t pid);
 extern int klink_read_message(char *buffer, size_t length);
@@ -88,7 +89,7 @@ static const struct command_registration klink_command_handlers[] = {
     COMMAND_REGISTRATION_DONE};
 
 /* Set new end state */
-static void klink_end_state(tap_state_t state)
+static void klink_end_state(enum tap_state state)
 {
     if (tap_is_state_stable(state))
         tap_set_end_state(state);
@@ -256,7 +257,7 @@ static void klink_execute_command(struct jtag_command *cmd)
         uint8_t uc00[0x10] = {0};
         klink_end_state(cmd->cmd.runtest->end_state);
         // 保存当前的tap状态
-        tap_state_t saved_end_state = tap_get_end_state();
+        enum tap_state saved_end_state = tap_get_end_state();
         // 移动到IDLE
         if (tap_get_state() != TAP_IDLE)
         {
